@@ -85,7 +85,7 @@ NavMeshSettings:
     cellSize: 0.16666667
     manualCellSize: 0
   m_NavMeshData: {fileID: 0}
---- !u!1001 &1278467478
+--- !u!1001 &907637366
 Prefab:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -98,7 +98,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 469086, guid: 0f93c479f7cfb4e328a85a8f7e4ef03f, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -5.2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 469086, guid: 0f93c479f7cfb4e328a85a8f7e4ef03f, type: 2}
       propertyPath: m_LocalPosition.z
@@ -106,7 +106,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 469086, guid: 0f93c479f7cfb4e328a85a8f7e4ef03f, type: 2}
       propertyPath: m_LocalRotation.x
-      value: 0.7071066
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 469086, guid: 0f93c479f7cfb4e328a85a8f7e4ef03f, type: 2}
       propertyPath: m_LocalRotation.y
@@ -118,7 +118,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 469086, guid: 0f93c479f7cfb4e328a85a8f7e4ef03f, type: 2}
       propertyPath: m_LocalRotation.w
-      value: -0.70710695
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 469086, guid: 0f93c479f7cfb4e328a85a8f7e4ef03f, type: 2}
       propertyPath: m_RootOrder
@@ -131,7 +131,13 @@ Prefab:
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 0f93c479f7cfb4e328a85a8f7e4ef03f, type: 2}
   m_IsPrefabParent: 0
---- !u!1001 &1502523390
+--- !u!114 &1725668965 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 11409748, guid: 0f93c479f7cfb4e328a85a8f7e4ef03f,
+    type: 2}
+  m_PrefabInternal: {fileID: 907637366}
+  m_Script: {fileID: 11500000, guid: 55ab124d228704fbe9ae2f65ef89433d, type: 3}
+--- !u!1001 &1807135933
 Prefab:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -221,12 +227,6 @@ Prefab:
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 048abeb1479ec4c409bce56d9ace491a, type: 2}
   m_IsPrefabParent: 0
---- !u!114 &1725668965 stripped
-MonoBehaviour:
-  m_PrefabParentObject: {fileID: 11409748, guid: 0f93c479f7cfb4e328a85a8f7e4ef03f,
-    type: 2}
-  m_PrefabInternal: {fileID: 1278467478}
-  m_Script: {fileID: 11500000, guid: 55ab124d228704fbe9ae2f65ef89433d, type: 3}
 --- !u!1 &1883600741
 GameObject:
   m_ObjectHideFlags: 0
