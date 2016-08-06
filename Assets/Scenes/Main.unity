@@ -85,7 +85,12 @@ NavMeshSettings:
     cellSize: 0.16666667
     manualCellSize: 0
   m_NavMeshData: {fileID: 0}
---- !u!1001 &907637366
+--- !u!224 &926680531 stripped
+RectTransform:
+  m_PrefabParentObject: {fileID: 22437390, guid: 048abeb1479ec4c409bce56d9ace491a,
+    type: 2}
+  m_PrefabInternal: {fileID: 1807135933}
+--- !u!1001 &1342874763
 Prefab:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -128,6 +133,10 @@ Prefab:
       propertyPath: mainCam
       value: 
       objectReference: {fileID: 1883600745}
+    - target: {fileID: 11436104, guid: 0f93c479f7cfb4e328a85a8f7e4ef03f, type: 2}
+      propertyPath: canvasRect
+      value: 
+      objectReference: {fileID: 926680531}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 0f93c479f7cfb4e328a85a8f7e4ef03f, type: 2}
   m_IsPrefabParent: 0
@@ -135,7 +144,7 @@ Prefab:
 MonoBehaviour:
   m_PrefabParentObject: {fileID: 11409748, guid: 0f93c479f7cfb4e328a85a8f7e4ef03f,
     type: 2}
-  m_PrefabInternal: {fileID: 907637366}
+  m_PrefabInternal: {fileID: 1342874763}
   m_Script: {fileID: 11500000, guid: 55ab124d228704fbe9ae2f65ef89433d, type: 3}
 --- !u!1001 &1807135933
 Prefab:
@@ -216,11 +225,11 @@ Prefab:
       propertyPath: m_Pivot.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 11467628, guid: 048abeb1479ec4c409bce56d9ace491a, type: 2}
+    - target: {fileID: 11412678, guid: 048abeb1479ec4c409bce56d9ace491a, type: 2}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1725668965}
-    - target: {fileID: 11412678, guid: 048abeb1479ec4c409bce56d9ace491a, type: 2}
+    - target: {fileID: 11467628, guid: 048abeb1479ec4c409bce56d9ace491a, type: 2}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1725668965}

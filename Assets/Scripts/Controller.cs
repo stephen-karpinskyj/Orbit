@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 using Random = UnityEngine.Random;
-using System.Collections;
 
 public class Controller : MonoBehaviour
 {
@@ -18,25 +18,20 @@ public class Controller : MonoBehaviour
     {
         public Color BackgroundColour;
         public Color ForegroundColour;
+        public Color HighlightColour;
     }
 
     [SerializeField]
     private float speed = 10f;
+    
+    [SerializeField]
+    private float orbitRadius = 0.7f;
 
     [SerializeField]
-    private float angularSpeed = 2f;
+    private ControllerPhysics physics;
 
     [SerializeField]
-    private Direction initialOrbitDirection = Direction.CW;
-
-    [SerializeField]
-    private Transform core;
-
-    [SerializeField]
-    private Transform cwOrbit;
-
-    [SerializeField]
-    private Transform ccwOrbit;
+    private Transform coreTrans;
 
     [SerializeField]
     private ColourPair[] colours;
@@ -45,7 +40,13 @@ public class Controller : MonoBehaviour
     private Camera mainCam;
 
     [SerializeField]
-    private SpriteRenderer spriteRenderer;
+    private SpriteRenderer[] overlaySpriteRenderers;
+
+    [SerializeField]
+    private SpriteRenderer cwSpriteRenderer;
+
+    [SerializeField]
+    private SpriteRenderer ccwSpriteRenderer;
 
     [SerializeField]
     private TrailRenderer trailRenderer;
@@ -63,41 +64,60 @@ public class Controller : MonoBehaviour
     private float fromOrbitDeltaSpeed = -20f;
 
     private bool isOrbiting;
+    private Vector3 orbitOrigin;
     private Direction orbitDirection;
     private float percentOrbit;
+    private ColourPair currentColour;
+
+    private Vector2 prevPos;
 
     private void Awake()
     {
         this.InitFramerate();
-
-        this.orbitDirection = this.initialOrbitDirection;
     }
 
     private void Start()
     {
-        this.CheckInput();
-
         this.GenerateColours();
         this.GeneratePoint();
 
         this.StartCoroutine(this.RandomisePointCoroutine());
     }
-    
+
     private void Update()
     {
+        var deltaTime = Time.smoothDeltaTime;
+        
         this.CheckInput();
+
+        this.UpdatePercentOrbit(this.isOrbiting, deltaTime);
+
+        if (!this.isOrbiting)
+        {
+            this.UpdateOrbitDirection();
+        }
+
+        this.UpdateOrbitOrigin();
+        this.UpdateCoreTransform(deltaTime);
+
+        //this.DEBUG_ValidateDistance(deltaTime);
+
+        this.prevPos = this.coreTrans.position;
     }
-    
-    private void FixedUpdate()
+
+    private void OnDrawGizmos()
     {
-        this.CheckInput();
-
-        this.UpdatePercentOrbit(this.isOrbiting);
-
-        this.UpdateOrbit(this.orbitDirection);
-        this.UpdateForward();
+        #if UNITY_EDITOR
+        if (!UnityEditor.EditorApplication.isPlaying)
+        {
+            return;
+        }
+        #endif
+        
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(this.orbitOrigin, this.orbitRadius);
     }
-    
+
     private IEnumerator RandomisePointCoroutine()
     {
         while (true)
@@ -105,31 +125,6 @@ public class Controller : MonoBehaviour
             yield return new WaitForSeconds(5f);
             this.GeneratePoint();
         }
-    }
-    
-    private void UpdatePercentOrbit(bool increase)
-    {
-        var mag = increase ? this.toOrbitDeltaSpeed : this.fromOrbitDeltaSpeed;
-        var delta = mag * Time.fixedDeltaTime;
-        this.percentOrbit = Mathf.Clamp01(this.percentOrbit + delta);
-    }
-
-    private void UpdateOrbit(Direction direction)
-    {
-        var orbitPoint = direction == Direction.CW ? this.cwOrbit.position : this.ccwOrbit.position;
-        var orbitAmount = this.angularSpeed * Time.fixedDeltaTime * this.percentOrbit;
-
-        if (direction == Direction.CCW)
-        {
-            orbitAmount *= -1;
-        }
-
-        this.core.RotateAround(orbitPoint, Vector3.forward, orbitAmount);
-    }
-
-    private void UpdateForward()
-    {
-        this.core.localPosition += this.core.forward * Time.fixedDeltaTime * this.speed * (1 - this.percentOrbit);
     }
 
     private void CheckInput()
@@ -145,11 +140,6 @@ public class Controller : MonoBehaviour
 
     private void OnStartOrbit()
     {
-        var right = this.core.right;
-        var to = this.point.localPosition - this.core.localPosition;
-        var dot = Vector3.Dot(right, to);
-
-        this.orbitDirection = dot > 0f ? Direction.CCW : Direction.CW;
     }
 
     private void InitFramerate()
@@ -169,17 +159,110 @@ public class Controller : MonoBehaviour
 
     private void GenerateColours()
     {
-        var newColours = this.colours[Random.Range(0, this.colours.Length)];
+        this.currentColour = this.colours[Random.Range(0, this.colours.Length)];
 
-        this.mainCam.backgroundColor = newColours.BackgroundColour;
+        this.mainCam.backgroundColor = this.currentColour.BackgroundColour;
 
-        this.trailRenderer.material.color = newColours.ForegroundColour;
-        this.spriteRenderer.material.color = newColours.ForegroundColour;
+        this.trailRenderer.material.color = this.currentColour.ForegroundColour;
+        foreach (var s in this.overlaySpriteRenderers)
+        {
+           s.color = this.currentColour.ForegroundColour;
+        }
+        this.cwSpriteRenderer.color = this.currentColour.ForegroundColour;
+        this.ccwSpriteRenderer.color = this.currentColour.ForegroundColour;
     }
 
     private void GeneratePoint()
     {
         this.point.localPosition = new Vector2(Random.Range(-pointBounds.x, pointBounds.x), Random.Range(-pointBounds.y, pointBounds.y));
+    }
+
+    private void UpdatePercentOrbit(bool increase, float deltaTime)
+    {
+        var mag = increase ? this.toOrbitDeltaSpeed : this.fromOrbitDeltaSpeed;
+        var delta = mag * deltaTime;
+        this.percentOrbit = Mathf.Clamp01(this.percentOrbit + delta);
+    }
+
+    private void UpdateOrbitDirection()
+    {
+        var right = this.coreTrans.right;
+        var to = this.point.localPosition - this.coreTrans.localPosition;
+        var dot = Vector3.Dot(right, to);
+
+        this.orbitDirection = dot > 0f ? Direction.CW : Direction.CCW;
+
+        this.cwSpriteRenderer.color = this.orbitDirection == Direction.CW ? this.currentColour.HighlightColour : this.currentColour.ForegroundColour;
+        this.ccwSpriteRenderer.color = this.orbitDirection == Direction.CCW ? this.currentColour.HighlightColour : this.currentColour.ForegroundColour;
+    }
+
+    private void UpdateOrbitOrigin()
+    {
+        var v = this.coreTrans.up;
+        var coreOrigin = (Vector2)this.coreTrans.position;
+        var offset = this.orbitRadius;
+
+        if (this.orbitDirection == Direction.CW)
+        {
+            offset *= -1;
+        }
+
+        // Based on: http://answers.unity3d.com/questions/564166/how-to-find-perpendicular-line-in-2d.html
+        this.orbitOrigin = coreOrigin + new Vector2(-v.y, v.x) / Mathf.Sqrt(Mathf.Pow(v.x, 2) + Mathf.Pow(v.y, 2)) * offset;
+    }
+
+    private void UpdateCoreTransform(float deltaTime)
+    {
+        var initPos = (Vector2)this.coreTrans.localPosition;
+
+        var posOffset = Vector2.zero;
+        var angleOffset = 0f;
+
+        // Orbit
+        {
+            var orbitDist = deltaTime * this.speed * this.percentOrbit;
+            var orbitDegrees = MathUtility.CircleArcDistanceToAngleOffset(orbitDist, this.orbitRadius);
+
+            if (this.orbitDirection == Direction.CW)
+            {
+                orbitDegrees *= -1;
+            }
+
+            var orbitDest = initPos.RotateAround(this.orbitOrigin, orbitDegrees);
+            var orbitPosOffset = (orbitDest - initPos);
+
+            posOffset += orbitPosOffset;
+            angleOffset += orbitDegrees;
+        }
+
+        // Forward
+        {
+            var forwardDir = (Vector2)this.coreTrans.up;
+            var forwardDist = deltaTime * this.speed * (1 - this.percentOrbit);
+            var forwardPosOffset = forwardDir * forwardDist;
+
+            posOffset += forwardPosOffset;
+        }
+
+        this.physics.Step(posOffset.normalized, posOffset.magnitude, angleOffset, !this.isOrbiting);
+    }
+
+    private void DEBUG_ValidateDistance(float deltaTime)
+    {
+        const string FORMAT = "#.000";
+
+        var targetDist = (deltaTime * this.speed).ToString(FORMAT);
+        var travelledDist = Vector2.Distance(this.coreTrans.position, this.prevPos).ToString(FORMAT);
+
+        if (Time.frameCount > 1 && travelledDist != targetDist)
+        {
+            Debug.LogError("Didn't travel the target distance: " + travelledDist + " / " + targetDist);
+            //UnityEditor.EditorApplication.isPaused = true;
+        }
+        else
+        {
+            Debug.Log(travelledDist + " / " + targetDist);
+        }
     }
 
     public void UGUI_OnResetButtonPress()
