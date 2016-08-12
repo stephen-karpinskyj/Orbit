@@ -35,4 +35,17 @@ public static class MathUtility
     {
         return (distance / circleRadius) * Mathf.Rad2Deg;
     }
+
+    /// <remarks>Based on: http://forum.unity3d.com/threads/how-do-i-find-the-closest-point-on-a-line.340058/</remarks>
+    public static Vector2 NearestPointOnFiniteLine(Vector2 start, Vector2 end, Vector2 point)
+    {
+        var line = (end - start);
+        var len = line.magnitude;
+        line.Normalize();
+
+        var v = point - start;
+        var d = Vector3.Dot(v, line);
+        d = Mathf.Clamp(d, 0f, len);
+        return start + line * d;
+    }
 }

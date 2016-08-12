@@ -439,7 +439,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvasRect: {fileID: 0}
   radius: 0.09
-  collisionTolerance: 0.001
   coreTrans: {fileID: 417684}
 --- !u!212 &21264130
 SpriteRenderer:

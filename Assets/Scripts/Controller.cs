@@ -7,12 +7,6 @@ using Random = UnityEngine.Random;
 
 public class Controller : MonoBehaviour
 {
-    private enum Direction
-    {
-        CW = 0,
-        CCW,
-    }
-
     [Serializable]
     private struct ColourPair
     {
@@ -70,6 +64,16 @@ public class Controller : MonoBehaviour
     private ColourPair currentColour;
 
     private Vector2 prevPos;
+    private bool isWallSliding;
+
+    private static bool IsTapping
+    {
+        get { return Input.anyKey; }
+    }
+
+    private static bool WasTapping { get; set; }
+
+    private bool hasTappedDownsWhileWallSliding;
 
     private void Awake()
     {
@@ -90,19 +94,30 @@ public class Controller : MonoBehaviour
         
         this.CheckInput();
 
-        this.UpdatePercentOrbit(this.isOrbiting, deltaTime);
-
-        if (!this.isOrbiting)
+        if (this.hasTappedDownsWhileWallSliding && !IsTapping)
         {
-            this.UpdateOrbitDirection();
+            this.isWallSliding = false;
+            this.OnStopWallSlide();
         }
 
-        this.UpdateOrbitOrigin();
+        if (!this.isWallSliding)
+        {
+            this.UpdatePercentOrbit(this.isOrbiting, deltaTime);
+
+            if (!this.isOrbiting)
+            {
+                this.UpdateOrbitDirection();
+            }
+
+            this.UpdateOrbitOrigin();
+        }
+
         this.UpdateCoreTransform(deltaTime);
 
         //this.DEBUG_ValidateDistance(deltaTime);
 
         this.prevPos = this.coreTrans.position;
+        WasTapping = IsTapping;
     }
 
     private void OnDrawGizmos()
@@ -130,7 +145,7 @@ public class Controller : MonoBehaviour
     private void CheckInput()
     {
         var wasOrbiting = this.isOrbiting;
-        this.isOrbiting = Input.anyKey;
+        this.isOrbiting = IsTapping;
 
         if (this.isOrbiting && !wasOrbiting)
         {
@@ -218,33 +233,62 @@ public class Controller : MonoBehaviour
         var posOffset = Vector2.zero;
         var angleOffset = 0f;
 
-        // Orbit
-        {
-            var orbitDist = deltaTime * this.speed * this.percentOrbit;
-            var orbitDegrees = MathUtility.CircleArcDistanceToAngleOffset(orbitDist, this.orbitRadius);
-
-            if (this.orbitDirection == Direction.CW)
-            {
-                orbitDegrees *= -1;
-            }
-
-            var orbitDest = initPos.RotateAround(this.orbitOrigin, orbitDegrees);
-            var orbitPosOffset = (orbitDest - initPos);
-
-            posOffset += orbitPosOffset;
-            angleOffset += orbitDegrees;
-        }
-
-        // Forward
+        if (this.isWallSliding)
         {
             var forwardDir = (Vector2)this.coreTrans.up;
-            var forwardDist = deltaTime * this.speed * (1 - this.percentOrbit);
-            var forwardPosOffset = forwardDir * forwardDist;
+            var forwardDist = deltaTime * this.speed;
+            posOffset += forwardDir * forwardDist;
 
-            posOffset += forwardPosOffset;
+            if (IsTapping && !WasTapping)
+            {
+                this.hasTappedDownsWhileWallSliding = true;
+            }
+        }
+        else
+        {
+            // Add orbit
+            {
+                var orbitDist = deltaTime * this.speed * this.percentOrbit;
+                var orbitDegrees = MathUtility.CircleArcDistanceToAngleOffset(orbitDist, this.orbitRadius);
+
+                if (this.orbitDirection == Direction.CW)
+                {
+                    orbitDegrees *= -1;
+                }
+
+                var orbitDest = initPos.RotateAround(this.orbitOrigin, orbitDegrees);
+                var orbitPosOffset = (orbitDest - initPos);
+
+                posOffset += orbitPosOffset;
+                angleOffset += orbitDegrees;
+            }
+
+            // Add forward
+            {
+                var forwardDir = (Vector2)this.coreTrans.up;
+                var forwardDist = deltaTime * this.speed * (1 - this.percentOrbit);
+                var forwardPosOffset = forwardDir * forwardDist;
+
+                posOffset += forwardPosOffset;
+            }
         }
 
-        this.physics.Step(posOffset.normalized, posOffset.magnitude, angleOffset, !this.isOrbiting);
+        var wasWallSliding = this.isWallSliding;
+        this.physics.Step(posOffset.normalized, posOffset.magnitude, angleOffset, IsTapping, this.orbitDirection, ref this.isWallSliding);
+        if (!wasWallSliding && this.isWallSliding)
+        {
+            this.OnStartWallSlide();
+        }
+    }
+
+    private void OnStartWallSlide()
+    {
+        this.hasTappedDownsWhileWallSliding = false;
+    }
+
+    private void OnStopWallSlide()
+    {
+        this.percentOrbit = 0f;
     }
 
     private void DEBUG_ValidateDistance(float deltaTime)
