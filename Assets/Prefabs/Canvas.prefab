@@ -26,14 +26,13 @@ GameObject:
   m_Component:
   - 224: {fileID: 22443590}
   - 222: {fileID: 22258178}
-  - 114: {fileID: 11412678}
   m_Layer: 5
-  m_Name: FPS Toggle Button
+  m_Name: FPS Display
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &126260
 GameObject:
   m_ObjectHideFlags: 0
@@ -45,6 +44,7 @@ GameObject:
   - 223: {fileID: 22336664}
   - 114: {fileID: 11421778}
   - 114: {fileID: 11494898}
+  - 114: {fileID: 11493708}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -166,58 +166,6 @@ Camera:
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
   m_StereoMirrorMode: 0
---- !u!114 &11412678
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 124650}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1392445389, guid: f5f67c52d1564df4a8936ccd202a3bd8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 0.5019608}
-    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 0.5019608}
-    m_PressedColor: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 0.1254902}
-    m_DisabledColor: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 0.1254902}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 11483092}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_MethodName: UGUI_OnFPSToggleButtonPress
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-    m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
-      Culture=neutral, PublicKeyToken=null
 --- !u!114 &11421778
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -311,7 +259,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 11493708}
         m_MethodName: UGUI_OnResetButtonPress
         m_Mode: 1
         m_Arguments:
@@ -408,6 +356,17 @@ MonoBehaviour:
   redColor: {r: 1, g: 1, b: 1, a: 0.5019608}
   yellowColor: {r: 1, g: 1, b: 1, a: 0.5019608}
   greenColor: {r: 1, g: 1, b: 1, a: 0.5019608}
+--- !u!114 &11493708
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 126260}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d59ef41ad394a455aa2d49ddacf2f622, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &11494898
 MonoBehaviour:
   m_ObjectHideFlags: 1

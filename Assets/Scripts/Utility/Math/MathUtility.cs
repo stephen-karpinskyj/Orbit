@@ -48,4 +48,10 @@ public static class MathUtility
         d = Mathf.Clamp(d, 0f, len);
         return start + line * d;
     }
+
+    /// <remarks>Source: http://answers.unity3d.com/questions/823090/equivalent-of-degree-to-vector2-in-unity.html#answer-823216</remarks>
+    public static Vector2 ToDirection(float degrees)
+    {
+        return Quaternion.AngleAxis(degrees, Vector3.forward) * Vector2.up;
+    }
 }
