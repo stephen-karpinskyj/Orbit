@@ -29,7 +29,7 @@ public class GameView : MonoBehaviour
     public void Initialize(GameContext context)
     {
         this.disc = GameObjectUtility.InstantiatePrefab(this.discPrefab, this.rootTrans);
-        this.disc.UpdateTransform(context);
+        this.disc.Initialize(context);
 
         for (var i = 0; i < context.Config.Paddle.NumPaddles; i++)
         {
@@ -47,6 +47,8 @@ public class GameView : MonoBehaviour
         {
             this.paddles[i].UpdateTransform(time, context);
         }
+
+        this.disc.UpdateTransform(time, context);
     }
 
     public void UpdateColours(GameContext context)

@@ -13,8 +13,8 @@ public class PaddleState
 
     public readonly int PlayerId;
 
-    private PaddleTransformState prevTransform;
-    public PaddleTransformState Transform;
+    private TransformState prevTransform;
+    public TransformState Transform;
 
     public float Speed;
     public bool IsTapping;
@@ -30,7 +30,7 @@ public class PaddleState
     public PaddleState(int playerId)
     {
         this.PlayerId = playerId;
-        this.Transform = new PaddleTransformState();
+        this.Transform = new TransformState();
         this.StartNextFrame();
     }
 
@@ -39,7 +39,7 @@ public class PaddleState
         this.prevTransform = this.Transform.Clone();
     }
 
-    public PaddleTransformState CalculateTransformAtTime(float time, GameContext context)
+    public TransformState CalculateTransformAtTime(float time, GameContext context)
     {
         var timeDiff = context.State.Time - context.State.PrevTime;
 
@@ -49,6 +49,6 @@ public class PaddleState
         }
         
         var t = (time - context.State.PrevTime) / timeDiff;
-        return PaddleTransformState.Lerp(this.prevTransform, this.Transform, t);
+        return TransformState.Lerp(this.prevTransform, this.Transform, t);
     }
 }

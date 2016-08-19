@@ -10,8 +10,18 @@ public class DiscView : MonoBehaviour
         Debug.Assert(this.rootTrans, this);
     }
 
-    public void UpdateTransform(GameContext context)
+    public void Initialize(GameContext context)
     {
-        this.rootTrans.localPosition = context.State.Disc.Position;
+        this.UpdateTransform(0f, context);
+    }
+
+    public void UpdateTransform(float time, GameContext context)
+    {
+        var state = context.State.Disc;
+
+        var trans = state.CalculateTransformAtTime(time, context);
+
+        this.rootTrans.localPosition = trans.Position;
+        this.rootTrans.localEulerAngles = Vector3.forward * trans.Rotation;
     }
 }

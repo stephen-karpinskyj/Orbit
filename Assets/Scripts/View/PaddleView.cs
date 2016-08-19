@@ -6,32 +6,41 @@ public class PaddleView : MonoBehaviour
     private Transform rootTrans;
 
     [SerializeField]
+    private Transform rotationTrans;
+
+    [SerializeField]
     private TrailRenderer trailRenderer;
 
     [SerializeField]
-    private SpriteRenderer[] overlaySpriteRenderers;
+    private SpriteRenderer spriteRenderer;
 
     [SerializeField]
-    private SpriteRenderer cwSpriteRenderer;
-
-    [SerializeField]
-    private SpriteRenderer ccwSpriteRenderer;
+    private float directionVisualUpdateSpeed = 1400f;
 
     private int playerId;
+
+    private float currRot;
+    private float targetRot;
 
     private void Awake()
     {
         Debug.Assert(this.rootTrans, this);
-
+        Debug.Assert(this.rotationTrans, this);
         Debug.Assert(this.trailRenderer, this);
+        Debug.Assert(this.spriteRenderer, this);
+    }
 
-        foreach (var s in this.overlaySpriteRenderers)
+    private void Update()
+    {
+        if (Mathf.Approximately(this.currRot, this.targetRot))
         {
-            Debug.Assert(s, this);
+            return;
         }
 
-        Debug.Assert(this.cwSpriteRenderer, this);
-        Debug.Assert(this.ccwSpriteRenderer, this);
+        this.currRot += this.directionVisualUpdateSpeed * Time.deltaTime * Mathf.Sign(this.targetRot - this.currRot);
+        this.currRot = Mathf.Clamp(this.currRot, 0, 90);
+
+        this.rotationTrans.localEulerAngles = Vector3.forward * this.currRot;
     }
 
     public void Initialize(int playerId, GameContext context)
@@ -58,21 +67,15 @@ public class PaddleView : MonoBehaviour
         var set = context.Config.Colours.CurrentSet;
 
         this.trailRenderer.material.color = set.ForegroundColour;
-
-        foreach (var s in this.overlaySpriteRenderers)
-        {
-            s.color = set.ForegroundColour;
-        }
+        this.spriteRenderer.material.color = set.ForegroundColour;
 
         this.UpdateDirection(context);
     }
 
     private void UpdateDirection(GameContext context)
     {
-        var colourSet = context.Config.Colours.CurrentSet;
         var state = context.State.GetPaddle(this.playerId);
 
-        this.cwSpriteRenderer.color = state.Direction == Direction.CW ? colourSet.HighlightColour : colourSet.ForegroundColour;
-        this.ccwSpriteRenderer.color = state.Direction == Direction.CCW ? colourSet.HighlightColour : colourSet.ForegroundColour;
+        this.targetRot = state.Direction == Direction.CW ? 0 : 90;
     }
 }

@@ -15,7 +15,7 @@ public class GameController : MonoBehaviour
     private int controllingPlayerId = 0;
 
     [SerializeField]
-    private PaddleTransformState initialPaddleTransform;
+    private TransformState initialPaddleTransform;
 
     [SerializeField]
     private float timestep = 1 / 60f;
@@ -26,14 +26,15 @@ public class GameController : MonoBehaviour
     private GameState state;
     private GameContext context;
 
-    private void Awake()
+    private void Start()
     {
         Debug.Assert(this.view, this);
         Debug.Assert(this.canvasRect, this);
 
         // Config
         var tableSize = this.CalculateTableSize();
-        this.config.Table.Initialize(tableSize, this.config.Paddle);
+        this.config.PaddleBox.Initialize(tableSize, config.Paddle.Radius);
+        this.config.DiscBox.Initialize(tableSize, config.Disc.Radius);
         this.config.Colours.GenerateColourSet();
 
         // State
@@ -65,6 +66,10 @@ public class GameController : MonoBehaviour
                 var paddleTarget = PaddlePlayerController.StepTarget(this.timestep, p.PlayerId, this.context);
                 PaddlePhysics.ResolveTarget(p.PlayerId, this.context, paddleTarget);
             }
+
+            this.context.State.Disc.StartNextFrame();
+            var discTarget = DiscController.StepTarget(this.timestep, this.context);
+            DiscPhysics.ResolveTarget(this.context, discTarget);
         }
 
         this.view.UpdateTransforms(Time.time, context);
@@ -79,7 +84,7 @@ public class GameController : MonoBehaviour
         }
         #endif
 
-        foreach (var w in this.context.Config.Table.Walls)
+        foreach (var w in this.context.Config.PaddleBox.Walls)
         {
             Gizmos.color = Color.green;
             Gizmos.DrawLine(w.Start, w.End);
@@ -96,6 +101,18 @@ public class GameController : MonoBehaviour
             Gizmos.color = Color.blue;
             Gizmos.DrawWireSphere(p.OrbitOrigin, this.context.Config.Paddle.OrbitRadius);
         }
+
+        foreach (var w in this.context.Config.DiscBox.Walls)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawLine(w.Start, w.End);
+
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawLine(w.Mid, w.Mid + w.Normal * 0.5f);
+        }
+
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(this.context.State.Disc.Transform.Position, this.context.Config.Disc.Radius);
     }
 
     private Vector2 CalculateTableSize()

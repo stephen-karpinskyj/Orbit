@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public class TableConfig
+public class Box
 {
     public enum WallType
     {
@@ -18,10 +18,10 @@ public class TableConfig
     public Bounds Bounds { get; private set; }
     public IEnumerable<Line> Walls { get { return this.walls; } }
 
-    public void Initialize(Vector2 size, PaddleConfig config)
+    public void Initialize(Vector2 size, float inset)
     {
-        var diameter = config.Radius * 2;
-        var tableSize = new Vector2(size.x - diameter, size.y - diameter);
+        var totalInset = inset * 2;
+        var tableSize = new Vector2(size.x - totalInset, size.y - totalInset);
         this.Bounds = new Bounds(Vector3.zero, tableSize);
 
         var min = this.Bounds.min;

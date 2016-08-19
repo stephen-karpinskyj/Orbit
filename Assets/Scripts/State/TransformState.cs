@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [Serializable]
-public class PaddleTransformState
+public class TransformState
 {
     public Vector2 Position;
 
@@ -27,14 +27,14 @@ public class PaddleTransformState
         }
     }
 
-    public PaddleTransformState Clone()
+    public TransformState Clone()
     {
-        return this.MemberwiseClone() as PaddleTransformState;
+        return this.MemberwiseClone() as TransformState;
     }
 
-    public static PaddleTransformState Lerp(PaddleTransformState a, PaddleTransformState b, float t)
+    public static TransformState Lerp(TransformState a, TransformState b, float t)
     {
-        var lerped = new PaddleTransformState();
+        var lerped = new TransformState();
         lerped.Position = Vector2.Lerp(a.Position, b.Position, t);
         lerped.Rotation = Mathf.Lerp(a.Rotation, b.Rotation, t);
         return lerped;

@@ -144,9 +144,15 @@ MonoBehaviour:
       numPaddles: 1
       radius: 0.09
       speed: 4
-      orbitRadius: 0.7
+      mass: 10
+      orbitRadius: 0.55
       toOrbitDeltaSpeed: 8
       fromOrbitDeltaSpeed: -15
+      discBounceFactor: 2
+    disc:
+      radius: 0.1667
+      mass: 20
+      dragFactor: 0.995
     colours:
       sets:
       - BackgroundColour: {r: 0.23529412, g: 0.23529412, b: 0.23529412, a: 1}
@@ -164,7 +170,7 @@ MonoBehaviour:
   initialPaddleTransform:
     Position: {x: 0, y: -4.5}
     rotation: 0
-  timestep: 0.03333
+  timestep: 0.0083333
   framerate: 60
 --- !u!114 &11420258
 MonoBehaviour:

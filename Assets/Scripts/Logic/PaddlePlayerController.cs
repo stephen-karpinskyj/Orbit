@@ -32,10 +32,10 @@ public static class PaddlePlayerController
         }
     }
 
-    public static PaddleControllerTarget StepTarget(float deltaTime, int playerId, GameContext context)
+    public static TransformTarget StepTarget(float deltaTime, int playerId, GameContext context)
     {
         var state = context.State.GetPaddle(playerId);
-        var target = new PaddleControllerTarget();
+        var target = new TransformTarget();
 
         StepPercentOrbit(deltaTime, playerId, context);
 
@@ -75,8 +75,8 @@ public static class PaddlePlayerController
         var state = context.State.GetPaddle(playerId);
         var trans = state.Transform;
 
-        var right = MathUtility.ToDirection(trans.Rotation - 90);
-        var to = context.State.Disc.Position - trans.Position;
+        var right = MathUtility.ToHeading(trans.Rotation - 90);
+        var to = context.State.Disc.Transform.Position - trans.Position;
         var dot = Vector3.Dot(right, to);
 
         state.Direction = dot > 0f ? Direction.CW : Direction.CCW;
@@ -87,7 +87,7 @@ public static class PaddlePlayerController
         var state = context.State.GetPaddle(playerId);
         var trans = state.Transform;
 
-        var v = MathUtility.ToDirection(trans.Rotation);
+        var v = MathUtility.ToHeading(trans.Rotation);
         var offset = context.Config.Paddle.OrbitRadius;
 
         if (state.Direction == Direction.CW)
@@ -99,7 +99,7 @@ public static class PaddlePlayerController
         state.OrbitOrigin = trans.Position + new Vector2(-v.y, v.x) / Mathf.Sqrt(Mathf.Pow(v.x, 2) + Mathf.Pow(v.y, 2)) * offset;
     }
 
-    private static void StepTransform(float deltaTime, int playerId, GameContext context, PaddleControllerTarget target)
+    private static void StepTransform(float deltaTime, int playerId, GameContext context, TransformTarget target)
     {
         var state = context.State.GetPaddle(playerId);
         var trans = state.Transform;
@@ -111,7 +111,7 @@ public static class PaddlePlayerController
         {
             // Add forward
             {
-                var forwardDir = MathUtility.ToDirection(trans.Rotation);
+                var forwardDir = MathUtility.ToHeading(trans.Rotation);
                 var forwardDist = deltaTime * context.Config.Paddle.Speed;
                 var forwardPosOffset = forwardDir * forwardDist;
 
@@ -139,7 +139,7 @@ public static class PaddlePlayerController
 
             // Add forward
             {
-                var forwardDir = MathUtility.ToDirection(trans.Rotation);
+                var forwardDir = MathUtility.ToHeading(trans.Rotation);
                 var forwardDist = deltaTime * context.Config.Paddle.Speed * (1 - state.PercentOrbit);
                 var forwardPosOffset = forwardDir * forwardDist;
 
@@ -147,7 +147,7 @@ public static class PaddlePlayerController
             }
         }
 
-        target.Direction = posOffset.normalized;
+        target.Heading = posOffset.normalized;
         target.Distance = posOffset.magnitude;
         target.AngleOffset = angleOffset;
     }

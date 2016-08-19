@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 
-public class PaddleControllerTarget
+public class TransformTarget
 {
-    public Vector2 Direction;
+    public Vector2 Heading;
     public float Distance;
     public float AngleOffset;
 }

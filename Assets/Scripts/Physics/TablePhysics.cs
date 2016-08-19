@@ -2,33 +2,34 @@
 
 public static class TablePhysics
 {
-    public static bool CheckPointCollision(TableConfig config, Vector2 currPoint, Vector2 targetPoint, out Line collisionWall, out Vector2 collisionPoint)
+    public static bool CheckPointCollision(Box box, Vector2 currPoint, Vector2 targetPoint, out Line collisionWall, out Vector2 collisionPoint)
     {
+        // Circle-line segment collision
         collisionWall = default(Line);
         collisionPoint = default(Vector2);
 
-        if (config.Bounds.Contains(targetPoint))
+        if (box.Bounds.Contains(targetPoint))
         {
             return false;
         }
 
         // FIXME: Need better way to choose which wall collision was with, can be incorrect if an object goes out of bounds in both x and y (ie. corner) in the same frame
         // TODO: Solve this more generally if we change wall layout
-        if (targetPoint.x < config.Bounds.min.x)
+        if (targetPoint.x < box.Bounds.min.x)
         {
-            collisionWall = config.GetWall(TableConfig.WallType.Left);
+            collisionWall = box.GetWall(Box.WallType.Left);
         }
-        else if (targetPoint.x > config.Bounds.max.x)
+        else if (targetPoint.x > box.Bounds.max.x)
         {
-            collisionWall = config.GetWall(TableConfig.WallType.Right);
+            collisionWall = box.GetWall(Box.WallType.Right);
         }
-        else if (targetPoint.y < config.Bounds.min.y)
+        else if (targetPoint.y < box.Bounds.min.y)
         {
-            collisionWall = config.GetWall(TableConfig.WallType.Bottom);
+            collisionWall = box.GetWall(Box.WallType.Bottom);
         }
-        else if (targetPoint.y > config.Bounds.max.y)
+        else if (targetPoint.y > box.Bounds.max.y)
         {
-            collisionWall = config.GetWall(TableConfig.WallType.Top);
+            collisionWall = box.GetWall(Box.WallType.Top);
         }
         else
         {
@@ -39,7 +40,7 @@ public static class TablePhysics
         return true;
     }
 
-    public static bool IsInside(TableConfig config, Vector2 point)
+    public static bool IsInside(Box config, Vector2 point)
     {
         return config.Bounds.SqrDistance(point) <= Mathf.Epsilon;
     }
