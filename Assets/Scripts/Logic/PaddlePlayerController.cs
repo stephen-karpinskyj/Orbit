@@ -7,7 +7,6 @@ public static class PaddlePlayerController
     {
         var state = context.State.GetPaddle(playerId);
 
-        var wasTapping = state.IsTapping;
         state.IsTapping = Input.anyKey;
 
         if (state.IsTapping && state.Mode != PaddleState.MovementMode.WallSliding)
@@ -15,20 +14,14 @@ public static class PaddlePlayerController
             state.Mode = PaddleState.MovementMode.Orbiting;
         }
 
-        if (!state.IsTapping && state.HasTappedDownWhileWallSliding)
-        {
-            state.Mode = PaddleState.MovementMode.Normal;
-            state.HasTappedDownWhileWallSliding = false;
-        }
-
         if (!state.IsTapping && state.Mode == PaddleState.MovementMode.Orbiting)
         {
             state.Mode = PaddleState.MovementMode.Normal;
         }
 
-        if (state.IsTapping && !wasTapping && state.Mode == PaddleState.MovementMode.WallSliding)
+        if (!state.IsTapping && state.Mode == PaddleState.MovementMode.WallSliding)
         {
-            state.HasTappedDownWhileWallSliding = true;
+            state.Mode = PaddleState.MovementMode.Normal;
         }
     }
 
@@ -112,7 +105,7 @@ public static class PaddlePlayerController
             // Add forward
             {
                 var forwardDir = MathUtility.ToHeading(trans.Rotation);
-                var forwardDist = deltaTime * context.Config.Paddle.Speed;
+                var forwardDist = deltaTime * context.Config.Paddle.WallSlideSpeed;
                 var forwardPosOffset = forwardDir * forwardDist;
 
                 posOffset += forwardPosOffset;
@@ -122,7 +115,7 @@ public static class PaddlePlayerController
         {
             // Add orbit
             {
-                var orbitDist = deltaTime * context.Config.Paddle.Speed * state.PercentOrbit;
+                var orbitDist = deltaTime * context.Config.Paddle.OrbitSpeed * state.PercentOrbit;
                 var orbitDegrees = MathUtility.CircleArcDistanceToAngleOffset(orbitDist, context.Config.Paddle.OrbitRadius);
 
                 if (state.Direction == Direction.CW)
@@ -140,7 +133,7 @@ public static class PaddlePlayerController
             // Add forward
             {
                 var forwardDir = MathUtility.ToHeading(trans.Rotation);
-                var forwardDist = deltaTime * context.Config.Paddle.Speed * (1 - state.PercentOrbit);
+                var forwardDist = deltaTime * context.Config.Paddle.ForwardSpeed * (1 - state.PercentOrbit);
                 var forwardPosOffset = forwardDir * forwardDist;
 
                 posOffset += forwardPosOffset;

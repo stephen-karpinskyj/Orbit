@@ -1,8 +1,6 @@
 ﻿using System;
 using UnityEngine;
 
-using Random = UnityEngine.Random;
-
 [Serializable]
 public class ColourConfig
 {
@@ -11,16 +9,23 @@ public class ColourConfig
     {
         public Color BackgroundColour;
         public Color ForegroundColour;
-        public Color HighlightColour;
     }
 
     [SerializeField]
     private ColourSet[] sets;
 
+    private static int nextIndex;
+
     public ColourSet CurrentSet { get; private set; }
 
     public void GenerateColourSet()
     {
-        this.CurrentSet = this.sets[Random.Range(0, this.sets.Length)];
+        this.CurrentSet = this.sets[nextIndex];
+
+        nextIndex++;
+        if (nextIndex >= this.sets.Length)
+        {
+            nextIndex = 0;
+        }
     }
 }

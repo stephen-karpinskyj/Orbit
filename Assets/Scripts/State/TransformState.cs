@@ -39,4 +39,10 @@ public class TransformState
         lerped.Rotation = Mathf.Lerp(a.Rotation, b.Rotation, t);
         return lerped;
     }
+
+    public void Reset()
+    {
+        this.Position = Vector2.zero;
+        this.Rotation = 0f;
+    }
 }

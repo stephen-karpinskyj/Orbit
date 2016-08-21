@@ -11,7 +11,13 @@ public class PaddleConfig
     private float radius = 0.09f;
 
     [SerializeField]
-    private float speed = 4f;
+    private float forwardSpeed = 3.2f;
+
+    [SerializeField]
+    private float orbitSpeed = 3.2f;
+
+    [SerializeField]
+    private float wallSlideSpeed = 6f;
 
     [SerializeField]
     private float mass = 10f;
@@ -30,7 +36,9 @@ public class PaddleConfig
 
     public int NumPaddles { get { return this.numPaddles; } }
     public float Radius { get { return this.radius; } }
-    public float Speed { get { return this.speed; } }
+    public float ForwardSpeed { get { return this.forwardSpeed; } }
+    public float OrbitSpeed { get { return this.orbitSpeed; } }
+    public float WallSlideSpeed { get { return this.wallSlideSpeed; } }
     public float Mass { get { return this.mass; } }
     public float OrbitRadius { get { return this.orbitRadius; } }
     public float ToOrbitDeltaSpeed { get { return this.toOrbitDeltaSpeed; } }

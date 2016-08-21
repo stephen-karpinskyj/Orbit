@@ -25,7 +25,7 @@ public class PaddleState
     public Vector2 OrbitOrigin;
 
     public Line SlideWall;
-    public bool HasTappedDownWhileWallSliding;
+    public Line TargetSlideWall;
 
     public PaddleState(int playerId)
     {

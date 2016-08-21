@@ -15,8 +15,9 @@ public class GameView : MonoBehaviour
     [SerializeField]
     private PaddleView paddlePrefab;
 
-    private DiscView disc;
     private List<PaddleView> paddles = new List<PaddleView>();
+
+    public DiscView Disc { get; private set; }
 
     private void Awake()
     {
@@ -28,8 +29,8 @@ public class GameView : MonoBehaviour
 
     public void Initialize(GameContext context)
     {
-        this.disc = GameObjectUtility.InstantiatePrefab(this.discPrefab, this.rootTrans);
-        this.disc.Initialize(context);
+        this.Disc = GameObjectUtility.InstantiatePrefab(this.discPrefab, this.rootTrans);
+        this.Disc.Initialize(context);
 
         for (var i = 0; i < context.Config.Paddle.NumPaddles; i++)
         {
@@ -48,7 +49,7 @@ public class GameView : MonoBehaviour
             this.paddles[i].UpdateTransform(time, context);
         }
 
-        this.disc.UpdateTransform(time, context);
+        this.Disc.UpdateTransform(time, context);
     }
 
     public void UpdateColours(GameContext context)

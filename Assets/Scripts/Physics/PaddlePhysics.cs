@@ -43,10 +43,17 @@ public static class PaddlePhysics
 
         if (!TablePhysics.IsInside(context.Config.PaddleBox, slideTargetPos))
         {
-            state.SlideWall = context.Config.PaddleBox.GetNextWall(state.SlideWall, state.Direction);
+            if (state.SlideWall.Equals(state.TargetSlideWall))
+            {
+                state.Direction = (state.Direction == Direction.CW) ? Direction.CCW : Direction.CW;
+            }
+            else
+            {
+                state.SlideWall = context.Config.PaddleBox.GetNextWall(state.SlideWall, state.Direction);
+            }
         }
 
-        trans.Rotation = CalculateWallSlideRotation(state);
+        trans.Rotation = CalculateWallSlideRotation(state, context.State.Disc);
     }
 
     private static void MoveToTarget(int playerId, GameContext context, TransformTarget target)
@@ -71,11 +78,14 @@ public static class PaddlePhysics
             target.Distance -= collisionPosAmount;
             trans.Position = collisionPosTarget;
 
-            if (state.IsTapping)
+            // TODO: Assumes bottom line is player's goal line
+            if (state.IsTapping && context.State.Disc.Transform.Position.y < -context.Config.ZoneOffset)
             {
                 state.Mode = PaddleState.MovementMode.WallSliding;
+                state.Direction = CalculateWallSlideDirection(context.Config.PaddleBox, collisionWall, collisionPoint, context.State.Disc.Transform.Position);
                 state.SlideWall = collisionWall;
-                trans.Rotation = CalculateWallSlideRotation(state);
+                state.TargetSlideWall = context.Config.PaddleBox.GetWall(Box.WallType.Bottom);
+                trans.Rotation = CalculateWallSlideRotation(state, context.State.Disc);
                 target.AngleOffset = 0;
             }
             else
@@ -99,9 +109,31 @@ public static class PaddlePhysics
         }
     }
 
-    private static float CalculateWallSlideRotation(PaddleState state)
+    private static float CalculateWallSlideRotation(PaddleState state, DiscState discState)
     {
-        return Vector2.up.SignedAngle(state.SlideWall.Normal);
+        var heading = (discState.Transform.Position - state.Transform.Position).normalized;
+        return Vector2.up.SignedAngle(heading);
+    }
+
+    private static Direction CalculateWallSlideDirection(Box paddleBox, Line collisionWall, Vector2 collisionPoint, Vector2 discPosition)
+    {
+        if (collisionWall.Equals(paddleBox.GetWall(Box.WallType.Left)))
+        {
+            return Direction.CCW;
+        }
+
+        if (collisionWall.Equals(paddleBox.GetWall(Box.WallType.Right)))
+        {
+            return Direction.CW;
+        }
+
+        // TODO: Account for which goal the team paddle's is, currently assumes the goal is on bottom line 
+        if (collisionWall.Equals(paddleBox.GetWall(Box.WallType.Top)))
+        {
+            return collisionPoint.x < 0f ? Direction.CCW : Direction.CW;
+        }
+
+        return discPosition.x > collisionPoint.x ? Direction.CCW : Direction.CW;
     }
 
     // TODO: Move to disc physics
@@ -115,7 +147,7 @@ public static class PaddlePhysics
         var paddlePos = state.Transform.Position;
 
         var discVelocity = context.State.Disc.Heading * context.State.Disc.Speed;
-        var paddleVelocity = target.Heading * context.Config.Paddle.Speed;
+        var paddleVelocity = target.Heading * context.Config.Paddle.ForwardSpeed;
         var discMass = context.Config.Disc.Mass;
         var paddleMass = context.Config.Paddle.Mass;
 
@@ -136,9 +168,7 @@ public static class PaddlePhysics
             newDiscVelocity.y = (discVelocity.y * (discMass - paddleMass) + (2 * paddleMass * paddleVelocity.y)) / (discMass + paddleMass);
 
             context.State.Disc.Heading = (newDiscVelocity + bounceHeading).normalized;
-            //context.State.Disc.Heading = newDiscVelocity.normalized;
             context.State.Disc.Speed = Mathf.Max(context.State.Disc.Speed, newDiscVelocity.magnitude * context.Config.Paddle.DiscBounceFactor);
-            //context.State.Disc.Speed = 10f;
         }
     }
 }

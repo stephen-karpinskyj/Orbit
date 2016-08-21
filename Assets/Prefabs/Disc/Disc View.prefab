@@ -145,6 +145,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rootTrans: {fileID: 447354}
+  trail: {fileID: 9692880}
 --- !u!212 &21268324
 SpriteRenderer:
   m_ObjectHideFlags: 1

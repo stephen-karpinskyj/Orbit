@@ -10,10 +10,13 @@ public class DiscState
     public float Speed;
     public Vector2 Heading;
 
+    public bool IsHeadingTowardGoal;
+    public bool IsInGoal;
+
     public DiscState()
     {
         this.Transform = new TransformState();
-        this.StartNextFrame();
+        this.Reset();
     }
 
     public void StartNextFrame()
@@ -32,5 +35,17 @@ public class DiscState
 
         var t = (time - context.State.PrevTime) / timeDiff;
         return TransformState.Lerp(this.prevTransform, this.Transform, t);
+    }
+
+    public void Reset()
+    {
+        this.Transform.Reset();
+        this.StartNextFrame();
+
+        this.Speed = 0f;
+        this.Heading = Vector2.up;
+
+        this.IsHeadingTowardGoal = false;
+        this.IsInGoal = false;
     }
 }

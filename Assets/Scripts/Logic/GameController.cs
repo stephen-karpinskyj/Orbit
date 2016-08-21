@@ -12,6 +12,12 @@ public class GameController : MonoBehaviour
     private RectTransform canvasRect;
 
     [SerializeField]
+    private Transform goalTransform;
+
+    [SerializeField]
+    private LineRenderer[] zoneLines;
+
+    [SerializeField]
     private int controllingPlayerId = 0;
 
     [SerializeField]
@@ -26,16 +32,30 @@ public class GameController : MonoBehaviour
     private GameState state;
     private GameContext context;
 
+    private int[] scores;
+
     private void Start()
     {
         Debug.Assert(this.view, this);
         Debug.Assert(this.canvasRect, this);
+        Debug.Assert(this.goalTransform, this);
+        Debug.Assert(this.zoneLines.Length == 2, this);
 
         // Config
         var tableSize = this.CalculateTableSize();
         this.config.PaddleBox.Initialize(tableSize, config.Paddle.Radius);
         this.config.DiscBox.Initialize(tableSize, config.Disc.Radius);
         this.config.Colours.GenerateColourSet();
+
+        this.goalTransform.localScale = new Vector3(this.config.GoalWidth, 1f, 1f);
+        this.scores = new int[2];
+        UIHandlers.Instance.UpdateScore(this.scores[0], this.scores[1]);
+
+        const float ZoneLinePosX = 3;
+        this.zoneLines[0].SetPosition(0, new Vector3(-ZoneLinePosX, -this.config.ZoneOffset, 1f));
+        this.zoneLines[0].SetPosition(1, new Vector3(ZoneLinePosX, -this.config.ZoneOffset, 1f));
+        this.zoneLines[1].SetPosition(0, new Vector3(-ZoneLinePosX, this.config.ZoneOffset, 1f));
+        this.zoneLines[1].SetPosition(1, new Vector3(ZoneLinePosX, this.config.ZoneOffset, 1f));
 
         // State
         this.state = new GameState(this.config);
@@ -70,6 +90,8 @@ public class GameController : MonoBehaviour
             this.context.State.Disc.StartNextFrame();
             var discTarget = DiscController.StepTarget(this.timestep, this.context);
             DiscPhysics.ResolveTarget(this.context, discTarget);
+
+            this.CheckGoalScored();
         }
 
         this.view.UpdateTransforms(Time.time, context);
@@ -122,5 +144,28 @@ public class GameController : MonoBehaviour
         screenSize.y *= this.canvasRect.localScale.y;
 
         return screenSize;
+    }
+
+    private void CheckGoalScored()
+    {
+        var discState = this.context.State.Disc;
+        
+        if (!discState.IsInGoal)
+        {
+            return;
+        }
+
+        var teamScored = discState.Transform.Position.y > 0 ? 0 : 1;
+        this.scores[teamScored]++;
+
+        Debug.Log("Team " + teamScored + " scored, scores are now " + this.scores[0] + " - " + this.scores[1]);
+
+        UIHandlers.Instance.UpdateScore(this.scores[0], this.scores[1]);
+
+        this.view.Disc.EnableTrail(false);
+        this.context.State.Disc.Reset();
+        this.context.State.Disc.Transform.Position = Vector2.left * Random.Range(-2.2f, 2.2f);
+        this.context.State.Disc.StartNextFrame();
+        this.view.Disc.EnableTrail(true);
     }
 }
