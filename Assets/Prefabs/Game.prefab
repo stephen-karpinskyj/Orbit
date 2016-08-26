@@ -312,22 +312,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   config:
-    goalWidth: 2
-    zoneOffset: 2.8
+    nonTutorialSize:
+      goalWidth: 2
+      zoneOffset: 2.8
+    tutorialSize:
+      goalWidth: 3.2
+      zoneOffset: 2.2
     paddle:
       numPaddles: 1
-      radius: 0.09
-      forwardSpeed: 3.2
-      orbitSpeed: 2.4
-      wallSlideSpeed: 8
-      mass: 10
-      orbitRadius: 0.32
+      nonTutorialSize:
+        radius: 0.09
+        forwardSpeed: 3.2
+        orbitSpeed: 2.4
+        wallSlideSpeed: 8
+        mass: 10
+        orbitRadius: 0.3
+      tutorialSize:
+        radius: 0.141
+        forwardSpeed: 3.2
+        orbitSpeed: 2.65
+        wallSlideSpeed: 8
+        mass: 15
+        orbitRadius: 0.45
       toOrbitDeltaSpeed: 6
       fromOrbitDeltaSpeed: -12
       discBounceFactor: 2.8
     disc:
-      radius: 0.1667
-      mass: 20
+      nonTutorialSize:
+        radius: 0.1667
+        mass: 20
+      tutorialSize:
+        radius: 0.243
+        mass: 30
       maxSpeed: 5
       dragFactor: 0.992
       wallBounceFactor: 1.5
@@ -350,7 +366,6 @@ MonoBehaviour:
     Position: {x: 0, y: -4.5}
     rotation: 0
   timestep: 0.0083333
-  framerate: 60
 --- !u!114 &11420258
 MonoBehaviour:
   m_ObjectHideFlags: 1

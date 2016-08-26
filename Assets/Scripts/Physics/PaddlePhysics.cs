@@ -41,11 +41,11 @@ public static class PaddlePhysics
         target.Distance -= Vector2.Distance(trans.Position, nextPos);
         trans.Position = nextPos;
 
-        if (!TablePhysics.IsInside(context.Config.PaddleBox, slideTargetPos))
+        if (!BoxPhysics.IsInside(context.Config.PaddleBox, slideTargetPos))
         {
             if (state.SlideWall.Equals(state.TargetSlideWall))
             {
-                state.Direction = (state.Direction == Direction.CW) ? Direction.CCW : Direction.CW;
+                state.Direction = state.Direction.Opposite();
             }
             else
             {
@@ -67,7 +67,7 @@ public static class PaddlePhysics
         Line collisionWall;
         Vector2 collisionPoint;
 
-        var collided = TablePhysics.CheckPointCollision(context.Config.PaddleBox, trans.Position, nextPos, out collisionWall, out collisionPoint);
+        var collided = BoxPhysics.CheckPointCollision(context.Config.PaddleBox, trans.Position, nextPos, out collisionWall, out collisionPoint);
         if (collided)
         {
             // Calculate partial position offset
@@ -79,7 +79,7 @@ public static class PaddlePhysics
             trans.Position = collisionPosTarget;
 
             // TODO: Assumes bottom line is player's goal line
-            if (state.IsTapping && context.State.Disc.Transform.Position.y < -context.Config.ZoneOffset)
+            /*if (state.IsTapping && context.State.Disc.Transform.Position.y < -context.Config.Size.ZoneOffset)
             {
                 state.Mode = PaddleState.MovementMode.WallSliding;
                 state.Direction = CalculateWallSlideDirection(context.Config.PaddleBox, collisionWall, collisionPoint, context.State.Disc.Transform.Position);
@@ -88,7 +88,7 @@ public static class PaddlePhysics
                 trans.Rotation = CalculateWallSlideRotation(state, context.State.Disc);
                 target.AngleOffset = 0;
             }
-            else
+            else*/
             {
                 // Calculate partial rotation offset
                 var bounceDistPercentage = collisionPosAmount / target.Distance;
@@ -141,15 +141,15 @@ public static class PaddlePhysics
     private static void CheckDiscCollision(PaddleState state, TransformTarget target, GameContext context)
     {
         // Circle-circle collision
-        var discRadius = context.Config.Disc.Radius;
-        var paddleRadius = context.Config.Paddle.Radius;
+        var discRadius = context.Config.Disc.Size.Radius;
+        var paddleRadius = context.Config.Paddle.Size.Radius;
         var discPos = context.State.Disc.Transform.Position;
         var paddlePos = state.Transform.Position;
 
         var discVelocity = context.State.Disc.Heading * context.State.Disc.Speed;
-        var paddleVelocity = target.Heading * context.Config.Paddle.ForwardSpeed;
-        var discMass = context.Config.Disc.Mass;
-        var paddleMass = context.Config.Paddle.Mass;
+        var paddleVelocity = target.Heading * context.Config.Paddle.Size.ForwardSpeed;
+        var discMass = context.Config.Disc.Size.Mass;
+        var paddleMass = context.Config.Paddle.Size.Mass;
 
         var dist = Vector2.Distance(discPos, paddlePos);
         var minDist = discRadius + paddleRadius;

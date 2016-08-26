@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public static class TablePhysics
+public static class BoxPhysics
 {
     public static bool CheckPointCollision(Box box, Vector2 currPoint, Vector2 targetPoint, out Line collisionWall, out Vector2 collisionPoint)
     {

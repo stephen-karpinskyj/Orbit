@@ -46,12 +46,12 @@ public static class DiscPhysics
         // TODO: Move goal logic to disc controller
         if (!state.IsHeadingTowardGoal)
         {
-            collided = TablePhysics.CheckPointCollision(context.Config.DiscBox, trans.Position, nextPos, out collisionWall, out collisionPoint);
+            collided = BoxPhysics.CheckPointCollision(context.Config.DiscBox, trans.Position, nextPos, out collisionWall, out collisionPoint);
         }
 
         if (collided && !state.IsHeadingTowardGoal)
         {
-            var halfGoalSize = context.Config.GoalWidth / 2 - context.Config.Disc.Radius; // HACK
+            var halfGoalSize = context.Config.Size.GoalWidth / 2 - context.Config.Disc.Size.Radius; // HACK
             var inGoalX = collisionPoint.x > -halfGoalSize && collisionPoint.x < halfGoalSize;
 
             if (inGoalX)
@@ -86,7 +86,7 @@ public static class DiscPhysics
 
         if (state.IsHeadingTowardGoal)
         {
-            var goalLineY = context.Config.DiscBox.Bounds.max.y + context.Config.Disc.Radius * 2;
+            var goalLineY = context.Config.DiscBox.Bounds.max.y + context.Config.Disc.Size.Radius * 2;
             if (Mathf.Abs(trans.Position.y) > goalLineY)
             {
                 state.IsInGoal = true;

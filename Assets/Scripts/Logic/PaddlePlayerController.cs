@@ -3,25 +3,87 @@ using UnityEngine;
 
 public static class PaddlePlayerController
 {
+    public enum ControlScheme
+    {
+        FollowDisc = 0,
+        DualTap,
+        TapToggle,
+        Count,
+    }
+
     public static void UpdateInput(int playerId, GameContext context)
     {
         var state = context.State.GetPaddle(playerId);
 
+        var wasTapping = state.IsTapping;
         state.IsTapping = Input.anyKey;
 
-        if (state.IsTapping && state.Mode != PaddleState.MovementMode.WallSliding)
+        switch (GameConfig.ControlScheme)
         {
-            state.Mode = PaddleState.MovementMode.Orbiting;
+            case ControlScheme.FollowDisc:
+            case ControlScheme.TapToggle:
+            {
+                if (state.IsTapping && state.Mode != PaddleState.MovementMode.WallSliding)
+                {
+                    state.Mode = PaddleState.MovementMode.Orbiting;
+                }
+
+                if (!state.IsTapping && state.Mode == PaddleState.MovementMode.Orbiting)
+                {
+                    state.Mode = PaddleState.MovementMode.Normal;
+                }
+
+                if (!state.IsTapping && state.Mode == PaddleState.MovementMode.WallSliding)
+                {
+                    state.Mode = PaddleState.MovementMode.Normal;
+                }
+            }
+            break;
+
+            case ControlScheme.DualTap:
+            {
+                if (state.IsTapping && state.Mode != PaddleState.MovementMode.WallSliding)
+                {
+                    #if !UNITY_EDITOR && (UNITY_ANDROID || UNITY_IPHONE)
+                    var halfScreen = Screen.width / 2f;
+                    var isLeftTapping = (Input.touchCount > 0 && Input.GetTouch(0).position.x < halfScreen) || (Input.touchCount > 1 && Input.GetTouch(1).position.x < halfScreen);
+                    var isRightTapping = (Input.touchCount > 0 && Input.GetTouch(0).position.x >= halfScreen) || (Input.touchCount > 1 && Input.GetTouch(1).position.x >= halfScreen);
+                    #else
+                    var isLeftTapping = Input.GetMouseButton(0) || Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A);
+                    var isRightTapping = Input.GetMouseButton(1) || Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D);
+                    #endif
+
+                    if (isLeftTapping)
+                    {
+                        state.Direction = Direction.CCW;
+                        state.Mode = PaddleState.MovementMode.Orbiting;
+                    }
+                    else if (isRightTapping)
+                    {
+                        state.Direction = Direction.CW;
+                        state.Mode = PaddleState.MovementMode.Orbiting;
+                    }
+                }
+
+                if (!state.IsTapping && state.Mode == PaddleState.MovementMode.Orbiting)
+                {
+                    state.Mode = PaddleState.MovementMode.Normal;
+                }
+                
+                if (!state.IsTapping && state.Mode == PaddleState.MovementMode.WallSliding)
+                {
+                    state.Mode = PaddleState.MovementMode.Normal;
+                }
+            }
+            break;
         }
 
-        if (!state.IsTapping && state.Mode == PaddleState.MovementMode.Orbiting)
+        if (GameConfig.ControlScheme == ControlScheme.TapToggle)
         {
-            state.Mode = PaddleState.MovementMode.Normal;
-        }
-
-        if (!state.IsTapping && state.Mode == PaddleState.MovementMode.WallSliding)
-        {
-            state.Mode = PaddleState.MovementMode.Normal;
+            if (wasTapping && !state.IsTapping)
+            {
+                state.Direction = state.Direction.Opposite();
+            }
         }
     }
 
@@ -32,13 +94,13 @@ public static class PaddlePlayerController
 
         StepPercentOrbit(deltaTime, playerId, context);
 
+        if (state.Mode == PaddleState.MovementMode.Normal)
+        {
+            UpdateOrbitDirection(playerId, context);
+        }
+
         if (state.Mode != PaddleState.MovementMode.WallSliding)
         {
-            if (state.Mode == PaddleState.MovementMode.Normal)
-            {
-                UpdateOrbitDirection(playerId, context);
-            }
-
             UpdateOrbitOrigin(playerId, context);
         }
 
@@ -65,14 +127,17 @@ public static class PaddlePlayerController
 
     private static void UpdateOrbitDirection(int playerId, GameContext context)
     {
-        var state = context.State.GetPaddle(playerId);
-        var trans = state.Transform;
+        if (GameConfig.ControlScheme == ControlScheme.FollowDisc)
+        {
+            var state = context.State.GetPaddle(playerId);
+            var trans = state.Transform;
 
-        var right = MathUtility.ToHeading(trans.Rotation - 90);
-        var to = context.State.Disc.Transform.Position - trans.Position;
-        var dot = Vector3.Dot(right, to);
+            var right = MathUtility.ToHeading(trans.Rotation - 90);
+            var to = context.State.Disc.Transform.Position - trans.Position;
+            var dot = Vector3.Dot(right, to);
 
-        state.Direction = dot > 0f ? Direction.CW : Direction.CCW;
+            state.Direction = dot > 0f ? Direction.CW : Direction.CCW;
+        }
     }
 
     private static void UpdateOrbitOrigin(int playerId, GameContext context)
@@ -81,7 +146,7 @@ public static class PaddlePlayerController
         var trans = state.Transform;
 
         var v = MathUtility.ToHeading(trans.Rotation);
-        var offset = context.Config.Paddle.OrbitRadius;
+        var offset = context.Config.Paddle.Size.OrbitRadius;
 
         if (state.Direction == Direction.CW)
         {
@@ -100,23 +165,23 @@ public static class PaddlePlayerController
         var posOffset = Vector2.zero;
         var angleOffset = 0f;
 
-        if (state.Mode == PaddleState.MovementMode.WallSliding)
+        /*if (state.Mode == PaddleState.MovementMode.WallSliding)
         {
             // Add forward
             {
                 var forwardDir = MathUtility.ToHeading(trans.Rotation);
-                var forwardDist = deltaTime * context.Config.Paddle.WallSlideSpeed;
+                var forwardDist = deltaTime * context.Config.Paddle.Size.WallSlideSpeed;
                 var forwardPosOffset = forwardDir * forwardDist;
 
                 posOffset += forwardPosOffset;
             }
         }
-        else
+        else*/
         {
             // Add orbit
             {
-                var orbitDist = deltaTime * context.Config.Paddle.OrbitSpeed * state.PercentOrbit;
-                var orbitDegrees = MathUtility.CircleArcDistanceToAngleOffset(orbitDist, context.Config.Paddle.OrbitRadius);
+                var orbitDist = deltaTime * context.Config.Paddle.Size.OrbitSpeed * state.PercentOrbit;
+                var orbitDegrees = MathUtility.CircleArcDistanceToAngleOffset(orbitDist, context.Config.Paddle.Size.OrbitRadius);
 
                 if (state.Direction == Direction.CW)
                 {
@@ -133,7 +198,7 @@ public static class PaddlePlayerController
             // Add forward
             {
                 var forwardDir = MathUtility.ToHeading(trans.Rotation);
-                var forwardDist = deltaTime * context.Config.Paddle.ForwardSpeed * (1 - state.PercentOrbit);
+                var forwardDist = deltaTime * context.Config.Paddle.Size.ForwardSpeed * (1 - state.PercentOrbit);
                 var forwardPosOffset = forwardDir * forwardDist;
 
                 posOffset += forwardPosOffset;

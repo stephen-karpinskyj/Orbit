@@ -26,9 +26,6 @@ public class GameController : MonoBehaviour
     [SerializeField]
     private float timestep = 1 / 60f;
 
-    [SerializeField]
-    private int framerate = 60;
-
     private GameState state;
     private GameContext context;
 
@@ -43,19 +40,19 @@ public class GameController : MonoBehaviour
 
         // Config
         var tableSize = this.CalculateTableSize();
-        this.config.PaddleBox.Initialize(tableSize, config.Paddle.Radius);
-        this.config.DiscBox.Initialize(tableSize, config.Disc.Radius);
+        this.config.PaddleBox.Initialize(tableSize, config.Paddle.Size.Radius);
+        this.config.DiscBox.Initialize(tableSize, config.Disc.Size.Radius);
         this.config.Colours.GenerateColourSet();
 
-        this.goalTransform.localScale = new Vector3(this.config.GoalWidth, 1f, 1f);
+        this.goalTransform.localScale = new Vector3(this.config.Size.GoalWidth, 1f, 1f);
         this.scores = new int[2];
         UIHandlers.Instance.UpdateScore(this.scores[0], this.scores[1]);
 
         const float ZoneLinePosX = 3;
-        this.zoneLines[0].SetPosition(0, new Vector3(-ZoneLinePosX, -this.config.ZoneOffset, 1f));
-        this.zoneLines[0].SetPosition(1, new Vector3(ZoneLinePosX, -this.config.ZoneOffset, 1f));
-        this.zoneLines[1].SetPosition(0, new Vector3(-ZoneLinePosX, this.config.ZoneOffset, 1f));
-        this.zoneLines[1].SetPosition(1, new Vector3(ZoneLinePosX, this.config.ZoneOffset, 1f));
+        this.zoneLines[0].SetPosition(0, new Vector3(-ZoneLinePosX, -this.config.Size.ZoneOffset, 1f));
+        this.zoneLines[0].SetPosition(1, new Vector3(ZoneLinePosX, -this.config.Size.ZoneOffset, 1f));
+        this.zoneLines[1].SetPosition(0, new Vector3(-ZoneLinePosX, this.config.Size.ZoneOffset, 1f));
+        this.zoneLines[1].SetPosition(1, new Vector3(ZoneLinePosX, this.config.Size.ZoneOffset, 1f));
 
         // State
         this.state = new GameState(this.config);
@@ -68,14 +65,16 @@ public class GameController : MonoBehaviour
         this.view.Initialize(this.context);
         this.view.UpdateColours(this.context);
 
-        Application.targetFrameRate = this.framerate;
+        Time.timeScale = 1f;
     }
 
     private void Update()
     {
         PaddlePlayerController.UpdateInput(this.controllingPlayerId, this.context);
 
-        while (this.context.State.Time < Time.time)
+        var time = Time.timeSinceLevelLoad;
+
+        while (this.context.State.Time < time)
         {
             this.context.State.PrevTime = this.context.State.Time;
             this.context.State.Time += this.timestep;
@@ -94,7 +93,7 @@ public class GameController : MonoBehaviour
             this.CheckGoalScored();
         }
 
-        this.view.UpdateTransforms(Time.time, context);
+        this.view.UpdateTransforms(time, context);
     }
 
     private void OnDrawGizmos()
@@ -118,10 +117,10 @@ public class GameController : MonoBehaviour
         foreach (var p in this.context.State.Paddles)
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(p.Transform.Position, this.context.Config.Paddle.Radius);
+            Gizmos.DrawWireSphere(p.Transform.Position, this.context.Config.Paddle.Size.Radius);
 
             Gizmos.color = Color.blue;
-            Gizmos.DrawWireSphere(p.OrbitOrigin, this.context.Config.Paddle.OrbitRadius);
+            Gizmos.DrawWireSphere(p.OrbitOrigin, this.context.Config.Paddle.Size.OrbitRadius);
         }
 
         foreach (var w in this.context.Config.DiscBox.Walls)
@@ -134,7 +133,7 @@ public class GameController : MonoBehaviour
         }
 
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(this.context.State.Disc.Transform.Position, this.context.Config.Disc.Radius);
+        Gizmos.DrawWireSphere(this.context.State.Disc.Transform.Position, this.context.Config.Disc.Size.Radius);
     }
 
     private Vector2 CalculateTableSize()
