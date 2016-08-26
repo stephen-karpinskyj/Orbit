@@ -8,7 +8,6 @@ public class PaddleState
     {
         Normal = 0,
         Orbiting,
-        WallSliding,
     }
 
     public readonly int PlayerId;
@@ -23,9 +22,6 @@ public class PaddleState
 
     public float PercentOrbit;
     public Vector2 OrbitOrigin;
-
-    public Line SlideWall;
-    public Line TargetSlideWall;
 
     public PaddleState(int playerId)
     {

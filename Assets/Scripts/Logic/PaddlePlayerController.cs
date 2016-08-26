@@ -7,7 +7,6 @@ public static class PaddlePlayerController
     {
         FollowDisc = 0,
         DualTap,
-        TapToggle,
         Count,
     }
 
@@ -15,25 +14,18 @@ public static class PaddlePlayerController
     {
         var state = context.State.GetPaddle(playerId);
 
-        var wasTapping = state.IsTapping;
         state.IsTapping = Input.anyKey;
 
         switch (GameConfig.ControlScheme)
         {
             case ControlScheme.FollowDisc:
-            case ControlScheme.TapToggle:
-            {
-                if (state.IsTapping && state.Mode != PaddleState.MovementMode.WallSliding)
+            {   
+                if (state.IsTapping)
                 {
                     state.Mode = PaddleState.MovementMode.Orbiting;
                 }
-
+                
                 if (!state.IsTapping && state.Mode == PaddleState.MovementMode.Orbiting)
-                {
-                    state.Mode = PaddleState.MovementMode.Normal;
-                }
-
-                if (!state.IsTapping && state.Mode == PaddleState.MovementMode.WallSliding)
                 {
                     state.Mode = PaddleState.MovementMode.Normal;
                 }
@@ -42,7 +34,7 @@ public static class PaddlePlayerController
 
             case ControlScheme.DualTap:
             {
-                if (state.IsTapping && state.Mode != PaddleState.MovementMode.WallSliding)
+                if (state.IsTapping)
                 {
                     #if !UNITY_EDITOR && (UNITY_ANDROID || UNITY_IPHONE)
                     var halfScreen = Screen.width / 2f;
@@ -69,21 +61,8 @@ public static class PaddlePlayerController
                 {
                     state.Mode = PaddleState.MovementMode.Normal;
                 }
-                
-                if (!state.IsTapping && state.Mode == PaddleState.MovementMode.WallSliding)
-                {
-                    state.Mode = PaddleState.MovementMode.Normal;
-                }
             }
             break;
-        }
-
-        if (GameConfig.ControlScheme == ControlScheme.TapToggle)
-        {
-            if (wasTapping && !state.IsTapping)
-            {
-                state.Direction = state.Direction.Opposite();
-            }
         }
     }
 
@@ -99,10 +78,7 @@ public static class PaddlePlayerController
             UpdateOrbitDirection(playerId, context);
         }
 
-        if (state.Mode != PaddleState.MovementMode.WallSliding)
-        {
-            UpdateOrbitOrigin(playerId, context);
-        }
+        UpdateOrbitOrigin(playerId, context);
 
         StepTransform(deltaTime, playerId, context, target);
 
@@ -113,16 +89,9 @@ public static class PaddlePlayerController
     {
         var state = context.State.GetPaddle(playerId);
 
-        if (state.Mode == PaddleState.MovementMode.WallSliding)
-        {
-            state.PercentOrbit = 0f;
-        }
-        else
-        {
-            var mag = state.Mode == PaddleState.MovementMode.Orbiting ? context.Config.Paddle.ToOrbitDeltaSpeed : context.Config.Paddle.FromOrbitDeltaSpeed;
-            var delta = mag * deltaTime;
-            state.PercentOrbit = Mathf.Clamp01(state.PercentOrbit + delta);
-        }
+        var mag = state.Mode == PaddleState.MovementMode.Orbiting ? context.Config.Paddle.ToOrbitDeltaSpeed : context.Config.Paddle.FromOrbitDeltaSpeed;
+        var delta = mag * deltaTime;
+        state.PercentOrbit = Mathf.Clamp01(state.PercentOrbit + delta);
     }
 
     private static void UpdateOrbitDirection(int playerId, GameContext context)
@@ -165,44 +134,30 @@ public static class PaddlePlayerController
         var posOffset = Vector2.zero;
         var angleOffset = 0f;
 
-        /*if (state.Mode == PaddleState.MovementMode.WallSliding)
+        // Add orbit
         {
-            // Add forward
-            {
-                var forwardDir = MathUtility.ToHeading(trans.Rotation);
-                var forwardDist = deltaTime * context.Config.Paddle.Size.WallSlideSpeed;
-                var forwardPosOffset = forwardDir * forwardDist;
+            var orbitDist = deltaTime * context.Config.Paddle.Size.OrbitSpeed * state.PercentOrbit;
+            var orbitDegrees = MathUtility.CircleArcDistanceToAngleOffset(orbitDist, context.Config.Paddle.Size.OrbitRadius);
 
-                posOffset += forwardPosOffset;
+            if (state.Direction == Direction.CW)
+            {
+                orbitDegrees *= -1;
             }
+
+            var orbitDest = trans.Position.RotateAround(state.OrbitOrigin, orbitDegrees);
+            var orbitPosOffset = (orbitDest - trans.Position);
+
+            posOffset += orbitPosOffset;
+            angleOffset += orbitDegrees;
         }
-        else*/
+
+        // Add forward
         {
-            // Add orbit
-            {
-                var orbitDist = deltaTime * context.Config.Paddle.Size.OrbitSpeed * state.PercentOrbit;
-                var orbitDegrees = MathUtility.CircleArcDistanceToAngleOffset(orbitDist, context.Config.Paddle.Size.OrbitRadius);
+            var forwardDir = MathUtility.ToHeading(trans.Rotation);
+            var forwardDist = deltaTime * context.Config.Paddle.Size.ForwardSpeed * (1 - state.PercentOrbit);
+            var forwardPosOffset = forwardDir * forwardDist;
 
-                if (state.Direction == Direction.CW)
-                {
-                    orbitDegrees *= -1;
-                }
-
-                var orbitDest = trans.Position.RotateAround(state.OrbitOrigin, orbitDegrees);
-                var orbitPosOffset = (orbitDest - trans.Position);
-
-                posOffset += orbitPosOffset;
-                angleOffset += orbitDegrees;
-            }
-
-            // Add forward
-            {
-                var forwardDir = MathUtility.ToHeading(trans.Rotation);
-                var forwardDist = deltaTime * context.Config.Paddle.Size.ForwardSpeed * (1 - state.PercentOrbit);
-                var forwardPosOffset = forwardDir * forwardDist;
-
-                posOffset += forwardPosOffset;
-            }
+            posOffset += forwardPosOffset;
         }
 
         target.Heading = posOffset.normalized;
