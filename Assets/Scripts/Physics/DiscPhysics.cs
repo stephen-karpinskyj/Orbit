@@ -30,7 +30,7 @@ public static class DiscPhysics
 
         var nextPos = trans.Position + target.Heading * target.Distance;
 
-        Line collisionWall;
+        Line collisionWall = default;
         var collisionPoint = Vector2.zero;
 
         var collided = false;

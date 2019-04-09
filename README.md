@@ -1,2 +1,2 @@
-# Orbit
-Minimalistic puzzle/arcade game
+# Puck
+One-touch, competitive air hockey with custom physics.
